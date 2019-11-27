@@ -1,25 +1,36 @@
 let loadedImages = document.getElementById("loadedImages")
 let displayBreed = document.getElementById("displayBreed")
+let subBreedDisplay = document.getElementById("subDisplay")
 let breed = window.location.hash;
-let imgTag = "image"
-let breedTag = "breeds"
+let subBreed = "";
+let imgTag = "image";
+let breedTag = "breeds";
 console.log(breed);
 
 if(breed === ""){
     breed = "";
-    imgTag = "image"
-    breedTag = "breeds"
+    imgTag = "image";
+    breedTag = "breeds";
+    subBreedDisplay.setAttribute("style","display:none");
 }else{
-    breed = window.location.hash.substr(1);
-    imgTag = "images"
-    breedTag = "breed/"
+    breed = window.location.hash.substr(1) + "-";
+    let test = breed.split("-");
+    console.log(test);
+    breed = test[0];
+    if(test[1] !== ""){
+        subBreed = "/" + test[1]
+    }
+    imgTag = "images";
+    breedTag = "breed/";
     displayBreed.textContent = window.location.hash.substr(1);
+    subBreedDisplay.setAttribute("style","display:block");
+    parseSubList();
 }
 console.log(breed)
 function reqListener(){
     console.log(this.responseText);
     console.log(this.status);
-    parseList(this.responseText)
+    parseList(this.responseText);
     getImages();
 }
 xhr = new XMLHttpRequest();
@@ -44,7 +55,7 @@ function loadImage(){
 function getImages(){
     oreq = new XMLHttpRequest();
     oreq.addEventListener("load", loadImage);
-    oreq.open("GET", "https://dog.ceo/api/"+breedTag+breed+"/"+imgTag+"/random/3");
+    oreq.open("GET", "https://dog.ceo/api/"+breedTag+breed+subBreed+"/"+imgTag+"/random/3");
     oreq.send();
 
     let reloadImage = document.createElement("button");
@@ -59,24 +70,73 @@ function getImages(){
 let dropdown = document.getElementById("dropdown");
 
 dropdown.addEventListener("change", function(){
+    subBreedDisplay.setAttribute("style","display:block");
     breed = this.value;
-    window.location.hash = this.value;
+    subBreed = "";
+    window.location.hash = breed;
     displayBreed.textContent = this.value;
     loadedImages.innerHTML = "";
     imgTag = "images"
     breedTag = "breed/"
     getImages();
+    parseSubList();
 })
 
 function parseList(parseText){
     let parsed = JSON.parse(parseText);
     console.log(parsed)
     let keys = Object.keys(parsed.message);
-    console.log(keys);
     for(let i = 0; i < keys.length; i++){
         let newOption = document.createElement("option");
         dropdown.appendChild(newOption);
         newOption.textContent = keys[i];
+        console.log(keys[i])
+        if(keys[i] === breed){
+            newOption.selected = true;
+        }
     }
 }
-console.log()
+
+let subListDisplay = document.getElementById("subList");
+
+function parseSubList(){
+    subXhr = new XMLHttpRequest();
+    subXhr.addEventListener("load", parseSub);
+    subXhr.open("GET", "https://dog.ceo/api/breed/"+breed+"/list");
+    subXhr.send();
+}
+function parseSub(){
+    subListDisplay.innerHTML = "";
+    console.log(this.responseText);
+    console.log(this.status);
+    let subParsed = JSON.parse(this.responseText);
+    console.log(subParsed);
+    if(subParsed.message.length === 0){
+        console.log("empty")
+        subBreedDisplay.setAttribute("style","display:none");
+    }
+    for(let i = 0; i < subParsed.message.length; i++){
+        if(i === 0){
+            let newOption = document.createElement("option");
+            subListDisplay.appendChild(newOption);
+            console.log(subParsed.message[i]);
+            newOption.textContent = "Select a sub-breed";
+            newOption.disabled = true;
+        }
+        let newOption = document.createElement("option");
+        subListDisplay.appendChild(newOption);
+        console.log(subParsed.message[i]);
+        newOption.textContent = subParsed.message[i];
+        if("/" +subParsed.message[i] === subBreed){
+            newOption.selected = true;
+        }
+    }
+}
+
+subListDisplay.addEventListener("change", function(){
+    subBreed = "/" + this.value;
+    window.location.hash = breed + "-" +this.value;
+    loadedImages.innerHTML = "";
+    console.log(this.value);
+    getImages();
+})
