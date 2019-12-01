@@ -1,6 +1,7 @@
 let loadedImages = document.getElementById("loadedImages")
 let displayBreed = document.getElementById("displayBreed")
 let subBreedDisplay = document.getElementById("subDisplay")
+let forButton = document.getElementById("forButton")
 let breed = window.location.hash;
 let subBreed = "";
 let imgTag = "image";
@@ -14,11 +15,11 @@ if(breed === ""){
     subBreedDisplay.setAttribute("style","display:none");
 }else{
     breed = window.location.hash.substr(1) + "-";
-    let test = breed.split("-");
-    console.log(test);
-    breed = test[0];
-    if(test[1] !== ""){
-        subBreed = "/" + test[1]
+    let splitted = breed.split("-");
+    console.log(splitted);
+    breed = splitted[0];
+    if(splitted[1] !== ""){
+        subBreed = "/" + splitted[1]
     }
     imgTag = "images";
     breedTag = "breed/";
@@ -60,9 +61,10 @@ function getImages(){
 
     let reloadImage = document.createElement("button");
     reloadImage.textContent = "Reload"
-    loadedImages.appendChild(reloadImage);
+    forButton.appendChild(reloadImage);
     reloadImage.addEventListener("click", function(){
         loadedImages.innerHTML = "";
+        forButton.innerHTML = "";
         getImages();
     })
 }
@@ -76,6 +78,7 @@ dropdown.addEventListener("change", function(){
     window.location.hash = breed;
     displayBreed.textContent = this.value;
     loadedImages.innerHTML = "";
+    forButton.innerHTML = "";
     imgTag = "images"
     breedTag = "breed/"
     getImages();
@@ -136,7 +139,9 @@ function parseSub(){
 subListDisplay.addEventListener("change", function(){
     subBreed = "/" + this.value;
     window.location.hash = breed + "-" +this.value;
+    displayBreed.textContent = breed + "-" + this.value;
     loadedImages.innerHTML = "";
+    forButton.innerHTML = "";
     console.log(this.value);
     getImages();
 })
